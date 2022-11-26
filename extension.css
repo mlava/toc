@@ -1,0 +1,40 @@
+.toc-container {
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 10px;
+    box-shadow: 3px 5px #888888;
+    top: 100px !important;
+    clear: both;
+    position: relative;
+    display: block;
+    width: max-content;
+    max-width: 250px;
+    z-index: 1;
+    padding: 15px 15px;
+}
+
+.toc-1 {
+    display: block;
+    font-size: 1.6em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.toc-2 {
+    display: block;
+    padding-left: 15px;
+    font-size: 1.4em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.toc-3 {
+    display: block;
+    padding-left: 30px;
+    font-size: 1.2em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
