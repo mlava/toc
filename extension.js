@@ -150,7 +150,7 @@ function pullFunction(before, after) {
 
 function scrollTo(uid) {
     const target = document.querySelector('[id*=' + uid + ']');
-    target.scrollIntoView();
+    target.scrollIntoView({behavior: "smooth"});
 }
 
 // modified from David Vargas' code at https://github.com/dvargas92495/roam-client/blob/main/src/queries.ts#L449
