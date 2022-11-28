@@ -47,7 +47,54 @@ async function toc() {
 
     let blocks = await getTreeByParentUid(parentUid);
     var headings = [];
-    var divParent;
+    var divParent, appBG, comph1, comph2, comph3, h1_size, h1_weight, h1_color, h2_size, h2_weight, h2_color, h3_size, h3_weight, h3_color;
+    var cssString = "";
+
+    const app = document.querySelector(".roam-body .roam-app");
+    const compApp = window.getComputedStyle(app);
+    if (compApp["backgroundColor"] == "rgba(0, 0, 0, 0)") {
+        appBG = "white";
+        cssString += ".toc-container {background-color: "+appBG+" !important;} ";
+    } else {
+        appBG = RGBAToHexA(compApp["backgroundColor"], true);
+        cssString += ".toc-container {background-color: "+appBG+" !important;} ";
+    }
+    if (document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input")) {
+        const h1 = document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input");
+        comph1 = window.getComputedStyle(h1);
+        h1_size = comph1["fontSize"];
+        h1_weight = comph1["fontWeight"];
+        h1_color = comph1["color"];
+        console.info(h1_color, h1_size, h1_weight);
+        cssString += ".toc-1 {font-size: "+h1_size+" !important; font-weight: "+h1_weight+" !important; color: "+h1_color+" !important;} ";
+    }
+    if (document.querySelector(".rm-heading-level-2>.rm-block__self .rm-block__input")) {
+        const h2 = document.querySelector(".rm-heading-level-2>.rm-block__self .rm-block__input");
+        comph2 = window.getComputedStyle(h2);
+        h2_size = comph2["fontSize"];
+        h2_weight = comph2["fontWeight"];
+        h2_color = comph2["color"];
+        cssString += ".toc-2 {font-size: "+h2_size+" !important; font-weight: "+h2_weight+" !important; color: "+h2_color+" !important;} ";
+    }
+    if (document.querySelector(".rm-heading-level-3>.rm-block__self .rm-block__input")) {
+        const h3 = document.querySelector(".rm-heading-level-3>.rm-block__self .rm-block__input");
+        comph3 = window.getComputedStyle(h3);
+        h3_size = comph3["fontSize"];
+        h3_weight = comph3["fontWeight"];
+        h3_color = comph3["color"];
+        cssString += ".toc-3 {font-size: "+h3_size+" !important; font-weight: "+h3_weight+" !important; color: "+h3_color+" !important;} ";
+    }
+    console.info(cssString);
+
+    var head = document.getElementsByTagName("head")[0];
+    if (document.getElementById("toc-css")) {
+        var cssStyles = document.getElementById("toc-css");
+        head.removeChild(cssStyles);
+    }
+    var style = document.createElement("style");
+    style.id = "toc-css";
+    style.textContent = cssString;
+    head.appendChild(style);
 
     traverseTree(blocks).then(async () => {
         if (document.getElementById("toc")) { // empty existing toc
@@ -150,7 +197,7 @@ function pullFunction(before, after) {
 
 function scrollTo(uid) {
     const target = document.querySelector('[id*=' + uid + ']');
-    target.scrollIntoView({behavior: "smooth"});
+    target.scrollIntoView({ behavior: "smooth" });
 }
 
 // modified from David Vargas' code at https://github.com/dvargas92495/roam-client/blob/main/src/queries.ts#L449
@@ -175,4 +222,15 @@ async function sortObjectsByOrder(o) {
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function RGBAToHexA(rgba, forceRemoveAlpha) { // courtesy of Lars Flieger at https://stackoverflow.com/questions/49974145/how-to-convert-rgba-to-hex-color-code-using-javascript
+    return "#" + rgba.replace(/^rgba?\(|\s+|\)$/g, '') // Get's rgba / rgb string values
+        .split(',') // splits them at ","
+        .filter((string, index) => !forceRemoveAlpha || index !== 3)
+        .map(string => parseFloat(string)) // Converts them to numbers
+        .map((number, index) => index === 3 ? Math.round(number * 255) : number) // Converts alpha to 255 number
+        .map(number => number.toString(16)) // Converts numbers to hex
+        .map(string => string.length === 1 ? "0" + string : string) // Adds 0 when length of one number is 1
+        .join("") // Puts the array to togehter to a string
 }

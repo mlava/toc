@@ -9,13 +9,16 @@
     display: block;
     width: max-content;
     max-width: 250px;
-    z-index: 1;
+    z-index: 20;
     padding: 15px 15px;
 }
 
 .toc-1 {
     display: block;
-    font-size: 1.6em;
+    /*
+    font-weight: 400;
+    font-size: 1.8em;
+    */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -24,7 +27,10 @@
 .toc-2 {
     display: block;
     padding-left: 15px;
+    /*
+    font-weight: 400;
     font-size: 1.4em;
+    */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -33,7 +39,11 @@
 .toc-3 {
     display: block;
     padding-left: 30px;
+    /*
+    font-weight: 500;
     font-size: 1.2em;
+    color: #5C7080;
+    */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
