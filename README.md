@@ -10,4 +10,4 @@ If you open the right sidebar, the TOC will move left so that it doesn't obstruc
 
 TODO:
 1. explore whether creating a TOC for a page can be persisted so that you don't need to re-create it if you go back to that page.
-~~2. configure TOC css to respect the css of any themes applied to your graph, including Roam Studio (just refresh the TOC by using the Command Palette)~~
+2. ~~configure TOC css to respect the css of any themes applied to your graph, including Roam Studio (just refresh the TOC by using the Command Palette)~~
