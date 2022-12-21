@@ -37,11 +37,11 @@ async function toc() {
     }
 
     await window.roamAlphaAPI.data.removePullWatch(
-        "[:block/children :block/heading {:block/children ...}]",
+        "[:block/children :block/heading :block/string {:block/children ...}]",
         `[:block/uid "${parentUid}"]`,
         pullFunction);
     await window.roamAlphaAPI.data.addPullWatch(
-        "[:block/children :block/heading {:block/children ...}]",
+        "[:block/children :block/heading :block/string {:block/children ...}]",
         `[:block/uid "${parentUid}"]`,
         pullFunction);
 
@@ -52,12 +52,13 @@ async function toc() {
 
     const app = document.querySelector(".roam-body .roam-app");
     const compApp = window.getComputedStyle(app);
+    let tocTopMargin = 125 - parseInt(compApp["height"]);
     if (compApp["backgroundColor"] == "rgba(0, 0, 0, 0)") {
         appBG = "white";
-        cssString += ".toc-container {background-color: "+appBG+" !important;} ";
+        cssString += ".toc-container {background-color: "+appBG+" !important; top: "+tocTopMargin+"px !important;} ";
     } else {
         appBG = RGBAToHexA(compApp["backgroundColor"], true);
-        cssString += ".toc-container {background-color: "+appBG+" !important;} ";
+        cssString += ".toc-container {background-color: "+appBG+" !important; top: "+tocTopMargin+"px !important;} ";
     }
     if (document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input")) {
         const h1 = document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input");
@@ -65,7 +66,6 @@ async function toc() {
         h1_size = comph1["fontSize"];
         h1_weight = comph1["fontWeight"];
         h1_color = comph1["color"];
-        console.info(h1_color, h1_size, h1_weight);
         cssString += ".toc-1 {font-size: "+h1_size+" !important; font-weight: "+h1_weight+" !important; color: "+h1_color+" !important;} ";
     }
     if (document.querySelector(".rm-heading-level-2>.rm-block__self .rm-block__input")) {
@@ -84,9 +84,8 @@ async function toc() {
         h3_color = comph3["color"];
         cssString += ".toc-3 {font-size: "+h3_size+" !important; font-weight: "+h3_weight+" !important; color: "+h3_color+" !important;} ";
     }
-    console.info(cssString);
 
-    var head = document.getElementsByTagName("head")[0];
+    var head = document.getElementsByTagName("head")[0]; // remove any existing toc styles and add updated styles
     if (document.getElementById("toc-css")) {
         var cssStyles = document.getElementById("toc-css");
         head.removeChild(cssStyles);
@@ -109,7 +108,10 @@ async function toc() {
                 } else {
                     newDiv.classList.add('toc-3');
                 }
-                newDiv.innerHTML = headings[i].text;
+                let headingText = headings[i].text.replaceAll("**", ""); // strip markdown from headings
+                headingText = headingText.replaceAll("__", "");
+                headingText = headingText.replaceAll("::", "");
+                newDiv.innerHTML = headingText;
                 newDiv.id = "toc" + i;
                 let uid = headings[i].uid;
                 newDiv.onclick = () => scrollTo(uid);
@@ -130,50 +132,31 @@ async function toc() {
                 } else {
                     newDiv.classList.add('toc-3');
                 }
-                newDiv.innerHTML = headings[i].text;
+                let headingText = headings[i].text.replaceAll("**", ""); // strip markdown from headings
+                headingText = headingText.replaceAll("__", "");
+                headingText = headingText.replaceAll("::", "");
+                newDiv.innerHTML = headingText;
                 newDiv.id = "toc" + i;
                 let uid = headings[i].uid;
                 newDiv.onclick = () => scrollTo(uid);
                 divParent.append(newDiv);
             }
 
-            var rightSidebarState = "closed";
-            var rightSidebar, rightSidebarPosition;
-            if (!document.querySelector("#roam-right-sidebar-content")) {
-                await window.roamAlphaAPI.ui.rightSidebar.open();
-                await sleep(10);
-                rightSidebar = document.querySelector("#right-sidebar");
-                rightSidebarPosition = rightSidebar.childNodes[2];
-                rightSidebarState = "open";
-            } else {
-                rightSidebar = document.querySelector("#right-sidebar");
-                rightSidebarPosition = rightSidebar.childNodes[2];
-            }
-            if (rightSidebar && rightSidebarPosition) {
-                rightSidebarPosition.parentNode.insertBefore(divParent, rightSidebarPosition);
-                if (rightSidebarState == "open") {
-                    await window.roamAlphaAPI.ui.rightSidebar.close()
-                }
-            }
+            let mainRoam = document.querySelector("div.roam-body-main"); // insert div in DOM
+            let position = mainRoam.childNodes[0];
+            position.after(divParent);
         }
 
-        // adjust placement based on new toc width
-        const toc = document.querySelector("#toc");
-        const compToc = window.getComputedStyle(toc);
-        const tocWidth = compToc["width"];
-        let leftMargin = 20 + parseInt(tocWidth);
-        toc.style.cssText = 'left: -' + leftMargin + 'px !important;';
-
-        hashChange = async (e) => {
+        hashChange = async (e) => { // remove toc if change page
             if (document.getElementById("toc")) {
                 document.getElementById("toc").remove();
             }
-            window.roamAlphaAPI.data.removePullWatch(
-                "[:block/children :block/heading {:block/children ...}]",
+            window.roamAlphaAPI.data.removePullWatch( // remove pullWatch if change page
+                "[:block/children :block/heading :block/string {:block/children ...}]",
                 `[:block/uid "${parentUid}"]`,
                 pullFunction);
 
-            window.removeEventListener('hashchange', hashChange);
+            window.removeEventListener('hashchange', hashChange); // remove listener if change page
         };
         window.addEventListener('hashchange', hashChange);
     });
@@ -220,10 +203,6 @@ async function sortObjectsByOrder(o) {
     });
 }
 
-async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 function RGBAToHexA(rgba, forceRemoveAlpha) { // courtesy of Lars Flieger at https://stackoverflow.com/questions/49974145/how-to-convert-rgba-to-hex-color-code-using-javascript
     return "#" + rgba.replace(/^rgba?\(|\s+|\)$/g, '') // Get's rgba / rgb string values
         .split(',') // splits them at ","
@@ -232,5 +211,5 @@ function RGBAToHexA(rgba, forceRemoveAlpha) { // courtesy of Lars Flieger at htt
         .map((number, index) => index === 3 ? Math.round(number * 255) : number) // Converts alpha to 255 number
         .map(number => number.toString(16)) // Converts numbers to hex
         .map(string => string.length === 1 ? "0" + string : string) // Adds 0 when length of one number is 1
-        .join("") // Puts the array to togehter to a string
+        .join("") // Puts the array to together to a string
 }

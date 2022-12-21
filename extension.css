@@ -3,7 +3,8 @@
     border: 1px solid black;
     border-radius: 10px;
     box-shadow: 3px 5px #888888;
-    top: 100px !important;
+    right: 20px !important;
+    float: right;
     clear: both;
     position: relative;
     display: block;
