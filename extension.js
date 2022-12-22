@@ -179,7 +179,7 @@ function pullFunction(before, after) {
 }
 
 function scrollTo(uid) {
-    const target = document.querySelector('[id*=' + uid + ']');
+    const target = document.querySelector('[id*="' + uid + '"]');
     target.scrollIntoView({ behavior: "smooth" });
 }
 
