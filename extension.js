@@ -1,5 +1,6 @@
 var parentUid = undefined;
 let hashChange = undefined;
+let observer = undefined;
 
 export default {
     onload: ({ extensionAPI }) => {
@@ -7,6 +8,79 @@ export default {
             label: "Create a Table of Contents (toc)",
             callback: () => toc()
         });
+
+        async function initiateObserver() {
+            const targetNode1 = document.getElementsByClassName("rm-topbar")[0];
+            const config = { attributes: false, childList: true, subtree: true };
+            const callback = function (mutationsList, observer) {
+                for (const mutation of mutationsList) {
+                    if (mutation.addedNodes[0]) {
+                        for (var i = 0; i < mutation.addedNodes[0]?.classList.length; i++) {
+                            if (mutation.addedNodes[0]?.classList[i] == "rm-open-left-sidebar-btn") { // left sidebar has been closed
+                                createDiv();
+                            }
+                        }
+                    } else if (mutation.removedNodes[0]) {
+                        for (var i = 0; i < mutation.removedNodes[0]?.classList.length; i++) {
+                            if (mutation.removedNodes[0]?.classList[i] == "rm-open-left-sidebar-btn") { // left sidebar has been opened
+                                createDiv();
+                            }
+                        }
+                    }
+                }
+            };
+            observer = new MutationObserver(callback);
+            observer.observe(targetNode1, config);
+        }
+        initiateObserver();
+        createDiv(); // onload
+
+        async function createDiv() {
+            if (document.getElementById("tableOfContents")) {
+                document.getElementById("tableOfContents").remove();
+            }
+            var div = document.createElement('div');
+            div.classList.add('flex-items');
+            div.innerHTML = "";
+            div.id = 'tableOfContents';
+            div.onclick = toc;
+            var span = document.createElement('span');
+            span.classList.add('bp3-button', 'bp3-minimal', 'bp3-small', 'bp3-icon-properties');
+            div.prepend(span);
+
+            if (document.querySelector(".rm-open-left-sidebar-btn")) {
+                await sleep(20);
+                if (document.querySelector("#workspaces")) { // Workspaces extension also installed, so place this to right
+                    let workspaces = document.querySelector("#workspaces");
+                    workspaces.after(div);
+                } else if (document.querySelector("#todayTomorrow")) { // Workspaces extension also installed, so place this to right
+                    let todayTomorrow = document.querySelector("#todayTomorrow");
+                    todayTomorrow.after(div);
+                } else if (document.querySelector("span.bp3-button.bp3-minimal.bp3-icon-arrow-right.pointer.bp3-small.rm-electron-nav-forward-btn")) {
+                    let electronArrows = document.getElementsByClassName("rm-electron-nav-forward-btn")[0];
+                    electronArrows.after(div);
+                } else {
+                    let sidebarButton = document.querySelector(".rm-open-left-sidebar-btn");
+                    sidebarButton.after(div);
+                }
+            } else {
+                await sleep(20);
+                if (document.querySelector("#workspaces")) { // Workspaces extension also installed, so place this to right
+                    let workspaces = document.querySelector("#workspaces");
+                    workspaces.after(div);
+                } else if (document.querySelector("#todayTomorrow")) { // Workspaces extension also installed, so place this to right
+                    let todayTomorrow = document.querySelector("#todayTomorrow");
+                    todayTomorrow.after(div);
+                } else if (document.querySelector("span.bp3-button.bp3-minimal.bp3-icon-arrow-right.pointer.bp3-small.rm-electron-nav-forward-btn")) {
+                    let electronArrows = document.getElementsByClassName("rm-electron-nav-forward-btn")[0];
+                    electronArrows.after(div);
+                } else {
+                    var topBarContent = document.querySelector("#app > div > div > div.flex-h-box > div.roam-main > div.rm-files-dropzone > div");
+                    var topBarRow = topBarContent.childNodes[1];
+                    topBarRow.parentNode.insertBefore(div, topBarRow);
+                }
+            }
+        }
     },
     onunload: () => {
         window.roamAlphaAPI.ui.commandPalette.removeCommand({
@@ -14,6 +88,9 @@ export default {
         });
         if (document.getElementById("toc")) {
             document.getElementById("toc").remove();
+        }
+        if (document.getElementById("tableOfContents")) {
+            document.getElementById("tableOfContents").remove();
         }
         window.roamAlphaAPI.data.removePullWatch(
             "[:block/children :block/heading {:block/children ...}]",
@@ -221,4 +298,8 @@ function RGBAToHexA(rgba, forceRemoveAlpha) { // courtesy of Lars Flieger at htt
         .map(number => number.toString(16)) // Converts numbers to hex
         .map(string => string.length === 1 ? "0" + string : string) // Adds 0 when length of one number is 1
         .join("") // Puts the array to together to a string
+}
+
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
