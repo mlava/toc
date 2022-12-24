@@ -55,10 +55,10 @@ async function toc() {
     let tocTopMargin = 125 - parseInt(compApp["height"]);
     if (compApp["backgroundColor"] == "rgba(0, 0, 0, 0)") {
         appBG = "white";
-        cssString += ".toc-container {background-color: "+appBG+" !important; top: "+tocTopMargin+"px !important;} ";
+        cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
     } else {
         appBG = RGBAToHexA(compApp["backgroundColor"], true);
-        cssString += ".toc-container {background-color: "+appBG+" !important; top: "+tocTopMargin+"px !important;} ";
+        cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
     }
     if (document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input")) {
         const h1 = document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input");
@@ -66,7 +66,7 @@ async function toc() {
         h1_size = comph1["fontSize"];
         h1_weight = comph1["fontWeight"];
         h1_color = comph1["color"];
-        cssString += ".toc-1 {font-size: "+h1_size+" !important; font-weight: "+h1_weight+" !important; color: "+h1_color+" !important;} ";
+        cssString += ".toc-1 {font-size: " + h1_size + " !important; font-weight: " + h1_weight + " !important; color: " + h1_color + " !important;} ";
     }
     if (document.querySelector(".rm-heading-level-2>.rm-block__self .rm-block__input")) {
         const h2 = document.querySelector(".rm-heading-level-2>.rm-block__self .rm-block__input");
@@ -74,7 +74,7 @@ async function toc() {
         h2_size = comph2["fontSize"];
         h2_weight = comph2["fontWeight"];
         h2_color = comph2["color"];
-        cssString += ".toc-2 {font-size: "+h2_size+" !important; font-weight: "+h2_weight+" !important; color: "+h2_color+" !important;} ";
+        cssString += ".toc-2 {font-size: " + h2_size + " !important; font-weight: " + h2_weight + " !important; color: " + h2_color + " !important;} ";
     }
     if (document.querySelector(".rm-heading-level-3>.rm-block__self .rm-block__input")) {
         const h3 = document.querySelector(".rm-heading-level-3>.rm-block__self .rm-block__input");
@@ -82,7 +82,7 @@ async function toc() {
         h3_size = comph3["fontSize"];
         h3_weight = comph3["fontWeight"];
         h3_color = comph3["color"];
-        cssString += ".toc-3 {font-size: "+h3_size+" !important; font-weight: "+h3_weight+" !important; color: "+h3_color+" !important;} ";
+        cssString += ".toc-3 {font-size: " + h3_size + " !important; font-weight: " + h3_weight + " !important; color: " + h3_color + " !important;} ";
     }
 
     var head = document.getElementsByTagName("head")[0]; // remove any existing toc styles and add updated styles
@@ -114,7 +114,7 @@ async function toc() {
                 newDiv.innerHTML = headingText;
                 newDiv.id = "toc" + i;
                 let uid = headings[i].uid;
-                newDiv.onclick = () => scrollTo(uid);
+                newDiv.onclick = (e) => scrollTo(e, uid);
                 divParent.append(newDiv);
             }
         } else {
@@ -138,7 +138,7 @@ async function toc() {
                 newDiv.innerHTML = headingText;
                 newDiv.id = "toc" + i;
                 let uid = headings[i].uid;
-                newDiv.onclick = () => scrollTo(uid);
+                newDiv.onclick = (e) => scrollTo(e, uid);
                 divParent.append(newDiv);
             }
 
@@ -178,9 +178,18 @@ function pullFunction(before, after) {
     toc();
 }
 
-function scrollTo(uid) {
-    const target = document.querySelector('[id*="' + uid + '"]');
-    target.scrollIntoView({ behavior: "smooth" });
+async function scrollTo(e, uid) {
+    var shiftButton = false;
+    if (e.shiftKey) {
+        shiftButton = true;
+    }
+    if (shiftButton == false) {
+        const target = document.querySelector('[id*="' + uid + '"]');
+        target.scrollIntoView({ behavior: "smooth" });
+    } else {
+        await window.roamAlphaAPI.ui.rightSidebar.open();
+        await window.roamAlphaAPI.ui.rightSidebar.addWindow({ window: { type: 'outline', 'block-uid': uid } });
+    }
 }
 
 // modified from David Vargas' code at https://github.com/dvargas92495/roam-client/blob/main/src/queries.ts#L449
