@@ -1,6 +1,8 @@
 If you do a lot of long-form writing (or reading) in Roam Research, you've probably always wanted this extension: Table of Contents.
 
-You can trigger this extension by opening the Command Palette and choosing 'Create a Table of Contents (toc)'. The extension will scan your page for all of your headings and create a floating, sticky Table of Contents to the right of your page.
+You can trigger this extension by opening the Command Palette and choosing 'Create a Table of Contents (toc)'. You could also click the icon in the Roam topbar at top left as shown below. The extension will scan your page for all of your headings and create a floating, sticky Table of Contents to the right of your page.
+
+![image](https://user-images.githubusercontent.com/6857790/209426667-006486e4-a818-4e24-8994-424d41226f85.png)
 
 Clicking on any of the headings in the TOC will scroll your page to that heading. Alternatively, if you hold shift while clicking on the TOC heading it will open that heading block in your right sidebar.
 
@@ -13,4 +15,4 @@ If you open the right sidebar, the TOC will move left so that it doesn't obstruc
 TODO:
 1. explore whether creating a TOC for a page can be persisted so that you don't need to re-create it if you go back to that page.
 2. ~~configure TOC css to respect the css of any themes applied to your graph, including Roam Studio (just refresh the TOC by using the Command Palette)~~
-3. ~~implement shift-click to open heading block in right sidebar rather than scrolling to content
+3. ~~implement shift-click to open heading block in right sidebar rather than scrolling to content~~
