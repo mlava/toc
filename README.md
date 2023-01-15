@@ -16,3 +16,5 @@ TODO:
 1. explore whether creating a TOC for a page can be persisted so that you don't need to re-create it if you go back to that page.
 2. ~~configure TOC css to respect the css of any themes applied to your graph, including Roam Studio (just refresh the TOC by using the Command Palette)~~
 3. ~~implement shift-click to open heading block in right sidebar rather than scrolling to content~~
+4. ~~make the topbar button a toggle to show or hide the TOC~~
+5. ~~automatically open any closed headings before attempting to scroll, to make sure there aren't errors~~
