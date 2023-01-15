@@ -173,7 +173,14 @@ async function toc() {
     head.appendChild(style);
 
     traverseTree(blocks).then(async () => {
-        if (document.getElementById("toc")) { // empty existing toc
+        if (document.getElementById("toc")) {
+            // toggle toc off
+            document.getElementById("toc").remove();
+            let button = document.getElementById("tableOfContents");
+            button.style.backgroundColor = "";
+            button.style.borderRadius = "";
+            /*
+            // empty existing toc
             divParent = document.getElementById("toc");
             divParent.innerHTML = "";
             for (var i = 0; i < headings.length; i++) { // iterate through headings and create divs in toc
@@ -194,7 +201,11 @@ async function toc() {
                 newDiv.onclick = (e) => scrollTo(e, uid);
                 divParent.append(newDiv);
             }
+            */
         } else {
+            let button = document.getElementById("tableOfContents");
+            button.style.backgroundColor = "#15e891";
+            button.style.borderRadius = "5px";
             divParent = document.createElement('div'); // create a toc div
             divParent.classList.add('toc-container');
             divParent.innerHTML = "";
@@ -215,6 +226,7 @@ async function toc() {
                 newDiv.innerHTML = headingText;
                 newDiv.id = "toc" + i;
                 let uid = headings[i].uid;
+                //window.roamAlphaAPI.updateBlock( { block: { uid: uid, open: true } }); // open all headings so that scrollTo doesn't throw error
                 newDiv.onclick = (e) => scrollTo(e, uid);
                 divParent.append(newDiv);
             }
@@ -256,6 +268,16 @@ function pullFunction(before, after) {
 }
 
 async function scrollTo(e, uid) {
+    let q = `[:find (pull ?page [:block/string :block/uid :block/open :block/order {:block/parents ...}]) :where [?page :block/uid "${uid}"]]`;
+    var results = await window.roamAlphaAPI.q(q);
+    if (results[0][0].parents.length > 0) {
+        for (var i = 0; i < results[0][0].parents.length; i++) {
+            if (results[0][0].parents[i].open == false) {
+                window.roamAlphaAPI.updateBlock({ block: { uid: results[0][0].parents[i].uid, open: true } });
+            }
+        }
+    }
+    await sleep(50);
     var shiftButton = false;
     if (e.shiftKey) {
         shiftButton = true;
