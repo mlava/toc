@@ -49,14 +49,14 @@ export default {
             div.prepend(span);
 
             if (document.querySelector(".rm-open-left-sidebar-btn")) {
-                await sleep(20);
+                await sleep(30);
                 if (document.querySelector("#workspaces")) { // Workspaces extension also installed, so place this to right
                     let workspaces = document.querySelector("#workspaces");
                     workspaces.after(div);
-                } else if (document.querySelector("#todayTomorrow")) { // Workspaces extension also installed, so place this to right
+                } else if (document.querySelector("#todayTomorrow")) { // Today Tomorrow extension also installed, so place this to right
                     let todayTomorrow = document.querySelector("#todayTomorrow");
                     todayTomorrow.after(div);
-                } else if (document.querySelector("span.bp3-button.bp3-minimal.bp3-icon-arrow-right.pointer.bp3-small.rm-electron-nav-forward-btn")) {
+                } else if (document.querySelector("span.bp3-button.bp3-minimal.bp3-icon-arrow-right.pointer.bp3-small.rm-electron-nav-forward-btn")) { // on Electron, place this to the right
                     let electronArrows = document.getElementsByClassName("rm-electron-nav-forward-btn")[0];
                     electronArrows.after(div);
                 } else {
@@ -64,14 +64,14 @@ export default {
                     sidebarButton.after(div);
                 }
             } else {
-                await sleep(20);
+                await sleep(30);
                 if (document.querySelector("#workspaces")) { // Workspaces extension also installed, so place this to right
                     let workspaces = document.querySelector("#workspaces");
                     workspaces.after(div);
-                } else if (document.querySelector("#todayTomorrow")) { // Workspaces extension also installed, so place this to right
+                } else if (document.querySelector("#todayTomorrow")) { // Today Tomorrow extension also installed, so place this to right
                     let todayTomorrow = document.querySelector("#todayTomorrow");
                     todayTomorrow.after(div);
-                } else if (document.querySelector("span.bp3-button.bp3-minimal.bp3-icon-arrow-right.pointer.bp3-small.rm-electron-nav-forward-btn")) {
+                } else if (document.querySelector("span.bp3-button.bp3-minimal.bp3-icon-arrow-right.pointer.bp3-small.rm-electron-nav-forward-btn")) { // on Electron, place this to the right
                     let electronArrows = document.getElementsByClassName("rm-electron-nav-forward-btn")[0];
                     electronArrows.after(div);
                 } else {
@@ -173,37 +173,13 @@ async function toc() {
     head.appendChild(style);
 
     traverseTree(blocks).then(async () => {
-        if (document.getElementById("toc")) {
-            // toggle toc off
+        if (document.getElementById("toc")) { // toggle toc off
             document.getElementById("toc").remove();
-            let button = document.getElementById("tableOfContents");
+            let button = document.getElementById("tableOfContents"); // unset background on button
             button.style.backgroundColor = "";
             button.style.borderRadius = "";
-            /*
-            // empty existing toc
-            divParent = document.getElementById("toc");
-            divParent.innerHTML = "";
-            for (var i = 0; i < headings.length; i++) { // iterate through headings and create divs in toc
-                var newDiv = document.createElement('div');
-                if (headings[i].heading == 1) {
-                    newDiv.classList.add('toc-1');
-                } else if (headings[i].heading == 2) {
-                    newDiv.classList.add('toc-2');
-                } else {
-                    newDiv.classList.add('toc-3');
-                }
-                let headingText = headings[i].text.replaceAll("**", ""); // strip markdown from headings
-                headingText = headingText.replaceAll("__", "");
-                headingText = headingText.replaceAll("::", "");
-                newDiv.innerHTML = headingText;
-                newDiv.id = "toc" + i;
-                let uid = headings[i].uid;
-                newDiv.onclick = (e) => scrollTo(e, uid);
-                divParent.append(newDiv);
-            }
-            */
         } else {
-            let button = document.getElementById("tableOfContents");
+            let button = document.getElementById("tableOfContents"); // set background on button
             button.style.backgroundColor = "#15e891";
             button.style.borderRadius = "5px";
             divParent = document.createElement('div'); // create a toc div
@@ -273,7 +249,7 @@ async function scrollTo(e, uid) {
     if (results[0][0].parents.length > 0) {
         for (var i = 0; i < results[0][0].parents.length; i++) {
             if (results[0][0].parents[i].open == false) {
-                window.roamAlphaAPI.updateBlock({ block: { uid: results[0][0].parents[i].uid, open: true } });
+                window.roamAlphaAPI.updateBlock({ block: { uid: results[0][0].parents[i].uid, open: true } }); // open the block so the div for this uid is in the DOM
             }
         }
     }
@@ -305,6 +281,7 @@ async function getTreeByParentUid(uid) {
     return tree;
 };
 
+// helper functions
 async function sortObjectsByOrder(o) {
     return o.sort(function (a, b) {
         return a.order - b.order;
@@ -312,7 +289,7 @@ async function sortObjectsByOrder(o) {
 }
 
 function RGBAToHexA(rgba, forceRemoveAlpha) { // courtesy of Lars Flieger at https://stackoverflow.com/questions/49974145/how-to-convert-rgba-to-hex-color-code-using-javascript
-    return "#" + rgba.replace(/^rgba?\(|\s+|\)$/g, '') // Get's rgba / rgb string values
+    return "#" + rgba.replace(/^rgba?\(|\s+|\)$/g, '') // Gets rgba / rgb string values
         .split(',') // splits them at ","
         .filter((string, index) => !forceRemoveAlpha || index !== 3)
         .map(string => parseFloat(string)) // Converts them to numbers
