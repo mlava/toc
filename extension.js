@@ -228,7 +228,7 @@ async function toc() {
 
     async function traverseTree(blocks) {
         blocks.map((x) => {
-            if (x.hasOwnProperty("heading")) {
+            if (x.hasOwnProperty("heading") && x.heading != 0) {
                 headings.push({ text: x.string, heading: x.heading, uid: x.uid })
             }
             if (x.hasOwnProperty("children")) {
