@@ -1,5 +1,8 @@
 If you do a lot of long-form writing (or reading) in Roam Research, you've probably always wanted this extension: Table of Contents.
 
+**NEW:**
+- Updated to work together with Augmented Headings extension to allow H4-H6 level headings
+
 You can trigger this extension by opening the Command Palette and choosing 'Create a Table of Contents (toc)'. You could also click the icon in the Roam topbar at top left as shown below. The extension will scan your page for all of your headings and create a floating, sticky Table of Contents to the right of your page.
 
 ![image](https://user-images.githubusercontent.com/6857790/209426667-006486e4-a818-4e24-8994-424d41226f85.png)
