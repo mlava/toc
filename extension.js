@@ -208,6 +208,10 @@ async function toc() {
             let button = document.getElementById("tableOfContents"); // unset background on button
             button.style.backgroundColor = "";
             button.style.borderRadius = "";
+            await window.roamAlphaAPI.data.removePullWatch(
+                "[:block/children :block/heading :block/string {:block/children ...}]",
+                `[:block/uid "${parentUid}"]`,
+                pullFunction);
         } else {
             let button = document.getElementById("tableOfContents"); // set background on button
             button.style.backgroundColor = "#15e891";
