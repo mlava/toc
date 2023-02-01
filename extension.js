@@ -1,12 +1,13 @@
 var parentUid = undefined;
 let hashChange = undefined;
 let observer = undefined;
+let tocShowing = false;
 
 export default {
     onload: ({ extensionAPI }) => {
         window.roamAlphaAPI.ui.commandPalette.addCommand({
             label: "Create a Table of Contents (toc)",
-            callback: () => toc()
+            callback: () => createTOC()
         });
 
         async function initiateObserver() {
@@ -17,13 +18,13 @@ export default {
                     if (mutation.addedNodes[0]) {
                         for (var i = 0; i < mutation.addedNodes[0]?.classList.length; i++) {
                             if (mutation.addedNodes[0]?.classList[i] == "rm-open-left-sidebar-btn") { // left sidebar has been closed
-                                createDiv();
+                                createMenuDiv();
                             }
                         }
                     } else if (mutation.removedNodes[0]) {
                         for (var i = 0; i < mutation.removedNodes[0]?.classList.length; i++) {
                             if (mutation.removedNodes[0]?.classList[i] == "rm-open-left-sidebar-btn") { // left sidebar has been opened
-                                createDiv();
+                                createMenuDiv();
                             }
                         }
                     }
@@ -33,9 +34,9 @@ export default {
             observer.observe(targetNode1, config);
         }
         initiateObserver();
-        createDiv(); // onload
+        createMenuDiv(); // onload
 
-        async function createDiv() {
+        async function createMenuDiv() {
             if (document.getElementById("tableOfContents")) {
                 document.getElementById("tableOfContents").remove();
             }
@@ -43,7 +44,7 @@ export default {
             div.classList.add('flex-items');
             div.innerHTML = "";
             div.id = 'tableOfContents';
-            div.onclick = toc;
+            div.onclick = toggleTOC;
             var span = document.createElement('span');
             span.classList.add('bp3-button', 'bp3-minimal', 'bp3-small', 'bp3-icon-properties');
             div.prepend(span);
@@ -99,7 +100,7 @@ export default {
     }
 }
 
-async function toc() {
+async function createTOC() {
     parentUid = await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
     if (parentUid == null) { // check for log page
         var uri = window.location.href;
@@ -113,175 +114,220 @@ async function toc() {
         }
     }
 
-    await window.roamAlphaAPI.data.removePullWatch(
-        "[:block/children :block/heading :block/string {:block/children ...}]",
-        `[:block/uid "${parentUid}"]`,
-        pullFunction);
     await window.roamAlphaAPI.data.addPullWatch(
         "[:block/children :block/heading :block/string {:block/children ...}]",
         `[:block/uid "${parentUid}"]`,
         pullFunction);
 
     let blocks = await getTreeByParentUid(parentUid);
-    var headings = [];
-    var divParent, appBG, comph1, comph2, comph3;
-    var cssString = "";
+    if (blocks != undefined) {
+        var headings = [];
+        var divParent, appBG, comph1, comph2, comph3;
+        var cssString = "";
 
-    const app = document.querySelector(".roam-body .roam-app");
-    const compApp = window.getComputedStyle(app);
-    let tocTopMargin = 125 - parseInt(compApp["height"]);
-    if (compApp["backgroundColor"] == "rgba(0, 0, 0, 0)") {
-        appBG = "white";
-        cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
-    } else {
-        appBG = RGBAToHexA(compApp["backgroundColor"], true);
-        cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
-    }
-    if (document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input")) {
-        const h1 = document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input");
-        comph1 = window.getComputedStyle(h1);
-        var h1_size = comph1["fontSize"];
-        var h1_weight = comph1["fontWeight"];
-        var h1_color = comph1["color"];
-        cssString += ".toc-1 {font-size: " + h1_size + " !important; font-weight: " + h1_weight + " !important; color: " + h1_color + " !important;} ";
-    }
-    if (document.querySelector(".rm-heading-level-2>.rm-block__self .rm-block__input")) {
-        const h2 = document.querySelector(".rm-heading-level-2>.rm-block__self .rm-block__input");
-        comph2 = window.getComputedStyle(h2);
-        var h2_size = comph2["fontSize"];
-        var h2_weight = comph2["fontWeight"];
-        var h2_color = comph2["color"];
-        cssString += ".toc-2 {font-size: " + h2_size + " !important; font-weight: " + h2_weight + " !important; color: " + h2_color + " !important;} ";
-    }
-    if (document.querySelector(".rm-heading-level-3>.rm-block__self .rm-block__input")) {
-        const h3 = document.querySelector(".rm-heading-level-3>.rm-block__self .rm-block__input");
-        comph3 = window.getComputedStyle(h3);
-        var h3_size = comph3["fontSize"];
-        var h3_weight = comph3["fontWeight"];
-        var h3_color = comph3["color"];
-        cssString += ".toc-3 {font-size: " + h3_size + " !important; font-weight: " + h3_weight + " !important; color: " + h3_color + " !important;} ";
-    }
-    if (document.querySelector("[data-tag^='h4'] + .rm-highlight")) {
-        const h4 = document.querySelector("[data-tag^='h4'] + .rm-highlight");
-        var comph4 = window.getComputedStyle(h4);
-        var h4_size = comph4["fontSize"];
-        var h4_weight = comph4["fontWeight"];
-        var h4_color = comph4["color"];
-        var h4_style = comph4["font-style"];
-        var h4_variant = comph4["font-variant"];
-        cssString += ".toc-4 {font-size: " + h4_size + " !important; font-weight: " + h4_weight + " !important; color: " + h4_color + " !important; font-style: " + h4_style + " !important; font-variant: " + h4_variant + " !important;} ";
-    }
-    if (document.querySelector("[data-tag^='h5'] + .rm-highlight")) {
-        const h5 = document.querySelector("[data-tag^='h5'] + .rm-highlight");
-        var comph5 = window.getComputedStyle(h5);
-        var h5_size = comph5["fontSize"];
-        var h5_weight = comph5["fontWeight"];
-        var h5_color = comph5["color"];
-        var h5_style = comph5["font-style"];
-        var h5_variant = comph5["font-variant"];
-        cssString += ".toc-5 {font-size: " + h5_size + " !important; font-weight: " + h5_weight + " !important; color: " + h5_color + " !important; font-style: " + h5_style + " !important; font-variant: " + h5_variant + " !important;} ";
-    }
-    if (document.querySelector("[data-tag^='h6'] + .rm-highlight")) {
-        const h6 = document.querySelector("[data-tag^='h6'] + .rm-highlight");
-        var comph6 = window.getComputedStyle(h6);
-        var h6_size = comph6["fontSize"];
-        var h6_weight = comph6["fontWeight"];
-        var h6_color = comph6["color"];
-        var h6_style = comph6["font-style"];
-        var h6_variant = comph6["font-variant"];
-        cssString += ".toc-6 {font-size: " + h6_size + " !important; font-weight: " + h6_weight + " !important; color: " + h6_color + " !important; font-style: " + h6_style + " !important; font-variant: " + h6_variant + " !important;} ";
-    }
-
-    var head = document.getElementsByTagName("head")[0]; // remove any existing toc styles and add updated styles
-    if (document.getElementById("toc-css")) {
-        var cssStyles = document.getElementById("toc-css");
-        head.removeChild(cssStyles);
-    }
-    var style = document.createElement("style");
-    style.id = "toc-css";
-    style.textContent = cssString;
-    head.appendChild(style);
-
-    traverseTree(blocks).then(async () => {
-        if (document.getElementById("toc")) { // toggle toc off
-            document.getElementById("toc").remove();
-            let button = document.getElementById("tableOfContents"); // unset background on button
-            button.style.backgroundColor = "";
-            button.style.borderRadius = "";
-            await window.roamAlphaAPI.data.removePullWatch(
-                "[:block/children :block/heading :block/string {:block/children ...}]",
-                `[:block/uid "${parentUid}"]`,
-                pullFunction);
+        const app = document.querySelector(".roam-body .roam-app");
+        const compApp = window.getComputedStyle(app);
+        let tocTopMargin = 125 - parseInt(compApp["height"]);
+        if (compApp["backgroundColor"] == "rgba(0, 0, 0, 0)") {
+            appBG = "white";
+            cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
         } else {
-            let button = document.getElementById("tableOfContents"); // set background on button
-            button.style.backgroundColor = "#15e891";
-            button.style.borderRadius = "5px";
-
-            divParent = document.createElement('div'); // create a toc div
-            divParent.classList.add('toc-container');
-            divParent.innerHTML = "";
-            divParent.id = 'toc';
-
-            for (var i = 0; i < headings.length; i++) { // iterate through headings and create divs in toc
-                var newDiv = document.createElement('div');
-                let tocLevel = "toc-"+headings[i].heading.toString();
-                newDiv.classList.add(tocLevel);
-
-                let headingText = headings[i].text.replaceAll("**", ""); // strip markdown from headings
-                headingText = headingText.replaceAll("__", "");
-                headingText = headingText.replaceAll("::", "");
-                const regex = /^#(h\d)\^\^(.+)\^\^$/; // check for H4-H6 heading code
-                if (regex.test(headingText)) {
-                    const array = [...headingText.match(regex)];
-                    headingText = array[2];
-                }
-                newDiv.innerHTML = headingText;
-                newDiv.id = "toc" + i;
-                let uid = headings[i].uid;
-                //window.roamAlphaAPI.updateBlock( { block: { uid: uid, open: true } }); // open all headings so that scrollTo doesn't throw error
-                newDiv.onclick = (e) => scrollTo(e, uid);
-                divParent.append(newDiv);
-            }
-
-            let mainRoam = document.querySelector("div.roam-body-main"); // insert div in DOM
-            let position = mainRoam.childNodes[0];
-            position.after(divParent);
+            appBG = RGBAToHexA(compApp["backgroundColor"], true);
+            cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
+        }
+        if (document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input")) {
+            const h1 = document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input");
+            comph1 = window.getComputedStyle(h1);
+            var h1_size = comph1["fontSize"];
+            var h1_weight = comph1["fontWeight"];
+            var h1_color = comph1["color"];
+            cssString += ".toc-1 {font-size: " + h1_size + " !important; font-weight: " + h1_weight + " !important; color: " + h1_color + " !important;} ";
+        }
+        if (document.querySelector(".rm-heading-level-2>.rm-block__self .rm-block__input")) {
+            const h2 = document.querySelector(".rm-heading-level-2>.rm-block__self .rm-block__input");
+            comph2 = window.getComputedStyle(h2);
+            var h2_size = comph2["fontSize"];
+            var h2_weight = comph2["fontWeight"];
+            var h2_color = comph2["color"];
+            cssString += ".toc-2 {font-size: " + h2_size + " !important; font-weight: " + h2_weight + " !important; color: " + h2_color + " !important;} ";
+        }
+        if (document.querySelector(".rm-heading-level-3>.rm-block__self .rm-block__input")) {
+            const h3 = document.querySelector(".rm-heading-level-3>.rm-block__self .rm-block__input");
+            comph3 = window.getComputedStyle(h3);
+            var h3_size = comph3["fontSize"];
+            var h3_weight = comph3["fontWeight"];
+            var h3_color = comph3["color"];
+            cssString += ".toc-3 {font-size: " + h3_size + " !important; font-weight: " + h3_weight + " !important; color: " + h3_color + " !important;} ";
+        }
+        if (document.querySelector("[data-tag^='h4'] + .rm-highlight")) {
+            const h4 = document.querySelector("[data-tag^='h4'] + .rm-highlight");
+            var comph4 = window.getComputedStyle(h4);
+            var h4_size = comph4["fontSize"];
+            var h4_weight = comph4["fontWeight"];
+            var h4_color = comph4["color"];
+            var h4_style = comph4["font-style"];
+            var h4_variant = comph4["font-variant"];
+            cssString += ".toc-4 {font-size: " + h4_size + " !important; font-weight: " + h4_weight + " !important; color: " + h4_color + " !important; font-style: " + h4_style + " !important; font-variant: " + h4_variant + " !important;} ";
+        }
+        if (document.querySelector("[data-tag^='h5'] + .rm-highlight")) {
+            const h5 = document.querySelector("[data-tag^='h5'] + .rm-highlight");
+            var comph5 = window.getComputedStyle(h5);
+            var h5_size = comph5["fontSize"];
+            var h5_weight = comph5["fontWeight"];
+            var h5_color = comph5["color"];
+            var h5_style = comph5["font-style"];
+            var h5_variant = comph5["font-variant"];
+            cssString += ".toc-5 {font-size: " + h5_size + " !important; font-weight: " + h5_weight + " !important; color: " + h5_color + " !important; font-style: " + h5_style + " !important; font-variant: " + h5_variant + " !important;} ";
+        }
+        if (document.querySelector("[data-tag^='h6'] + .rm-highlight")) {
+            const h6 = document.querySelector("[data-tag^='h6'] + .rm-highlight");
+            var comph6 = window.getComputedStyle(h6);
+            var h6_size = comph6["fontSize"];
+            var h6_weight = comph6["fontWeight"];
+            var h6_color = comph6["color"];
+            var h6_style = comph6["font-style"];
+            var h6_variant = comph6["font-variant"];
+            cssString += ".toc-6 {font-size: " + h6_size + " !important; font-weight: " + h6_weight + " !important; color: " + h6_color + " !important; font-style: " + h6_style + " !important; font-variant: " + h6_variant + " !important;} ";
         }
 
-        hashChange = async (e) => { // remove toc if change page
+        var head = document.getElementsByTagName("head")[0]; // remove any existing toc styles and add updated styles
+        if (document.getElementById("toc-css")) {
+            var cssStyles = document.getElementById("toc-css");
+            head.removeChild(cssStyles);
+        }
+        var style = document.createElement("style");
+        style.id = "toc-css";
+        style.textContent = cssString;
+        head.appendChild(style);
+
+        traverseTree(blocks).then(async () => {
             if (document.getElementById("toc")) {
                 document.getElementById("toc").remove();
             }
-            window.roamAlphaAPI.data.removePullWatch( // remove pullWatch if change page
-                "[:block/children :block/heading :block/string {:block/children ...}]",
-                `[:block/uid "${parentUid}"]`,
-                pullFunction);
+            if (headings.length > 0) {
+                let button = document.getElementById("tableOfContents"); // set background on button
+                button.style.backgroundColor = "#15e891";
+                button.style.borderRadius = "5px";
 
-            window.removeEventListener('hashchange', hashChange); // remove listener if change page
-        };
-        window.addEventListener('hashchange', hashChange);
-    });
+                divParent = document.createElement('div'); // create a toc div
+                divParent.classList.add('toc-container');
+                divParent.innerHTML = "";
+                divParent.id = 'toc';
 
-    async function traverseTree(blocks) {
-        const regex = /^#h(\d)\^\^(.+)\^\^$/;
-        blocks.map((x) => {
-            if ((x.hasOwnProperty("heading") && x.heading != 0)) {
-                headings.push({ text: x.string, heading: x.heading, uid: x.uid })
-            } else if (regex.test(x.string)) {
-                const array = [...x.string.toString().match(regex)];
-                headings.push({ text: x.string, heading: parseInt(array[1]), uid: x.uid })
-            }
-            if (x.hasOwnProperty("children")) {
-                sortObjectsByOrder(x.children);
-                traverseTree(x.children);
+                for (var i = 0; i < headings.length; i++) { // iterate through headings and create divs in toc
+                    var newDiv = document.createElement('div');
+                    let tocLevel = "toc-" + headings[i].heading.toString();
+                    newDiv.classList.add(tocLevel);
+
+                    let headingText = headings[i].text.replaceAll("**", ""); // strip markdown from headings
+                    headingText = headingText.replaceAll("__", "");
+                    headingText = headingText.replaceAll("::", "");
+                    const regex = /^#(h\d)\^\^(.+)\^\^$/; // check for H4-H6 heading code
+                    if (regex.test(headingText)) {
+                        const array = [...headingText.match(regex)];
+                        headingText = array[2];
+                    }
+                    newDiv.innerHTML = headingText;
+                    newDiv.id = "toc" + i;
+                    let uid = headings[i].uid;
+                    newDiv.onclick = (e) => scrollTo(e, uid);
+                    divParent.append(newDiv);
+                }
+
+                let mainRoam = document.querySelector("div.roam-body-main"); // insert div in DOM
+                let position = mainRoam.childNodes[0];
+                position.after(divParent);
+
+                hashChange = async (e) => { // remove toc if change page
+                    if (document.getElementById("toc")) {
+                        document.getElementById("toc").remove();
+                    }
+                    let button = document.getElementById("tableOfContents"); // unset background on button
+                    button.style.backgroundColor = "";
+                    button.style.borderRadius = "";
+                    await window.roamAlphaAPI.data.removePullWatch(
+                        "[:block/children :block/heading :block/string {:block/children ...}]",
+                        `[:block/uid "${parentUid}"]`,
+                        pullFunction);
+
+                    tocShowing = false;
+                    window.removeEventListener('hashchange', hashChange); // remove listener if change page
+                };
+                window.addEventListener('hashchange', hashChange);
+                tocShowing = true;
+            } else {
+                if (document.getElementById("toc")) {
+                    document.getElementById("toc").remove();
+                }
+                let button = document.getElementById("tableOfContents"); // unset background on button
+                button.style.backgroundColor = "";
+                button.style.borderRadius = "";
+                await window.roamAlphaAPI.data.removePullWatch(
+                    "[:block/children :block/heading :block/string {:block/children ...}]",
+                    `[:block/uid "${parentUid}"]`,
+                    pullFunction);
+                if (tocShowing == false) {
+                    alert("There are no headings on this page!");
+                }
+                tocShowing = false;
             }
         });
+
+        async function traverseTree(blocks) {
+            const regex = /^#h(\d)\^\^(.+)\^\^$/;
+            blocks.map((x) => {
+                if ((x.hasOwnProperty("heading") && x.heading != 0)) {
+                    headings.push({ text: x.string, heading: x.heading, uid: x.uid })
+                } else if (regex.test(x.string)) {
+                    const array = [...x.string.toString().match(regex)];
+                    headings.push({ text: x.string, heading: parseInt(array[1]), uid: x.uid })
+                }
+                if (x.hasOwnProperty("children")) {
+                    sortObjectsByOrder(x.children);
+                    traverseTree(x.children);
+                }
+            });
+        }
+    } else {
+        if (document.getElementById("toc")) {
+            document.getElementById("toc").remove();
+        }
+        let button = document.getElementById("tableOfContents"); // unset background on button
+        button.style.backgroundColor = "";
+        button.style.borderRadius = "";
+        await window.roamAlphaAPI.data.removePullWatch(
+            "[:block/children :block/heading :block/string {:block/children ...}]",
+            `[:block/uid "${parentUid}"]`,
+            pullFunction);
+        alert("There are no headings on this page!");
+        tocShowing = false;
     }
 }
 
 async function pullFunction(before, after) {
     await sleep(50);
-    toc();
+    if (tocShowing == true) {
+        createTOC();
+    }
+}
+
+async function toggleTOC() {
+    if (tocShowing == true) {
+        if (document.getElementById("toc")) {
+            document.getElementById("toc").remove();
+        }
+        let button = document.getElementById("tableOfContents"); // unset background on button
+        button.style.backgroundColor = "";
+        button.style.borderRadius = "";
+        await window.roamAlphaAPI.data.removePullWatch(
+            "[:block/children :block/heading :block/string {:block/children ...}]",
+            `[:block/uid "${parentUid}"]`,
+            pullFunction);
+
+        tocShowing = false;
+    } else {
+        createTOC();
+    }
 }
 
 async function scrollTo(e, uid) {
@@ -318,8 +364,10 @@ async function getTreeByParentUid(uid) {
         :block/heading
         {:block/children ...}
       ]) :where [?b :block/uid "${uid}"]]`)[0][0].children;
-    tree = await sortObjectsByOrder(tree);
-    return tree;
+    if (tree != undefined) {
+        tree = await sortObjectsByOrder(tree);
+        return tree;
+    }
 };
 
 // helper functions
