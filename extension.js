@@ -2,6 +2,7 @@ var parentUid = undefined;
 let hashChange = undefined;
 let observer = undefined;
 let tocShowing = false;
+var h4Tag, h5Tag, h6Tag;
 
 export default {
     onload: ({ extensionAPI }) => {
@@ -159,35 +160,44 @@ async function createTOC() {
             var h3_color = comph3["color"];
             cssString += ".toc-3 {font-size: " + h3_size + " !important; font-weight: " + h3_weight + " !important; color: " + h3_color + " !important;} ";
         }
-        if (document.querySelector("[data-tag^='h4'] + .rm-highlight")) {
-            const h4 = document.querySelector("[data-tag^='h4'] + .rm-highlight");
-            var comph4 = window.getComputedStyle(h4);
-            var h4_size = comph4["fontSize"];
-            var h4_weight = comph4["fontWeight"];
-            var h4_color = comph4["color"];
-            var h4_style = comph4["font-style"];
-            var h4_variant = comph4["font-variant"];
-            cssString += ".toc-4 {font-size: " + h4_size + " !important; font-weight: " + h4_weight + " !important; color: " + h4_color + " !important; font-style: " + h4_style + " !important; font-variant: " + h4_variant + " !important;} ";
+        if (localStorage.getItem("augmented_headings:h4")) {
+            h4Tag = localStorage.getItem("augmented_headings:h4");
+            if (document.querySelector("[data-tag^='" + h4Tag + "'] + .rm-highlight")) {
+                const h4 = document.querySelector("[data-tag^='" + h4Tag + "'] + .rm-highlight");
+                var comph4 = window.getComputedStyle(h4);
+                var h4_size = comph4["fontSize"];
+                var h4_weight = comph4["fontWeight"];
+                var h4_color = comph4["color"];
+                var h4_style = comph4["font-style"];
+                var h4_variant = comph4["font-variant"];
+                cssString += ".toc-4 {font-size: " + h4_size + " !important; font-weight: " + h4_weight + " !important; color: " + h4_color + " !important; font-style: " + h4_style + " !important; font-variant: " + h4_variant + " !important;} ";
+            }
         }
-        if (document.querySelector("[data-tag^='h5'] + .rm-highlight")) {
-            const h5 = document.querySelector("[data-tag^='h5'] + .rm-highlight");
-            var comph5 = window.getComputedStyle(h5);
-            var h5_size = comph5["fontSize"];
-            var h5_weight = comph5["fontWeight"];
-            var h5_color = comph5["color"];
-            var h5_style = comph5["font-style"];
-            var h5_variant = comph5["font-variant"];
-            cssString += ".toc-5 {font-size: " + h5_size + " !important; font-weight: " + h5_weight + " !important; color: " + h5_color + " !important; font-style: " + h5_style + " !important; font-variant: " + h5_variant + " !important;} ";
+        if (localStorage.getItem("augmented_headings:h5")) {
+            h5Tag = localStorage.getItem("augmented_headings:h5");
+            if (document.querySelector("[data-tag^='" + h5Tag + "'] + .rm-highlight")) {
+                const h5 = document.querySelector("[data-tag^='" + h5Tag + "'] + .rm-highlight");
+                var comph5 = window.getComputedStyle(h5);
+                var h5_size = comph5["fontSize"];
+                var h5_weight = comph5["fontWeight"];
+                var h5_color = comph5["color"];
+                var h5_style = comph5["font-style"];
+                var h5_variant = comph5["font-variant"];
+                cssString += ".toc-5 {font-size: " + h5_size + " !important; font-weight: " + h5_weight + " !important; color: " + h5_color + " !important; font-style: " + h5_style + " !important; font-variant: " + h5_variant + " !important;} ";
+            }
         }
-        if (document.querySelector("[data-tag^='h6'] + .rm-highlight")) {
-            const h6 = document.querySelector("[data-tag^='h6'] + .rm-highlight");
-            var comph6 = window.getComputedStyle(h6);
-            var h6_size = comph6["fontSize"];
-            var h6_weight = comph6["fontWeight"];
-            var h6_color = comph6["color"];
-            var h6_style = comph6["font-style"];
-            var h6_variant = comph6["font-variant"];
-            cssString += ".toc-6 {font-size: " + h6_size + " !important; font-weight: " + h6_weight + " !important; color: " + h6_color + " !important; font-style: " + h6_style + " !important; font-variant: " + h6_variant + " !important;} ";
+        if (localStorage.getItem("augmented_headings:h6")) {
+            h6Tag = localStorage.getItem("augmented_headings:h6");
+            if (document.querySelector("[data-tag^='" + h6Tag + "'] + .rm-highlight")) {
+                const h6 = document.querySelector("[data-tag^='" + h6Tag + "'] + .rm-highlight");
+                var comph6 = window.getComputedStyle(h6);
+                var h6_size = comph6["fontSize"];
+                var h6_weight = comph6["fontWeight"];
+                var h6_color = comph6["color"];
+                var h6_style = comph6["font-style"];
+                var h6_variant = comph6["font-variant"];
+                cssString += ".toc-6 {font-size: " + h6_size + " !important; font-weight: " + h6_weight + " !important; color: " + h6_color + " !important; font-style: " + h6_style + " !important; font-variant: " + h6_variant + " !important;} ";
+            }
         }
 
         var head = document.getElementsByTagName("head")[0]; // remove any existing toc styles and add updated styles
@@ -276,11 +286,22 @@ async function createTOC() {
         async function traverseTree(blocks) {
             const regex = /^#h(\d)\^\^(.+)\^\^$/;
             blocks.map((x) => {
-                if ((x.hasOwnProperty("heading") && x.heading != 0)) {
+                if ((x.hasOwnProperty("heading") && x.heading != 0)) { // RR native headings
                     headings.push({ text: x.string, heading: x.heading, uid: x.uid })
-                } else if (regex.test(x.string)) {
-                    const array = [...x.string.toString().match(regex)];
-                    headings.push({ text: x.string, heading: parseInt(array[1]), uid: x.uid })
+                } else if (localStorage.getItem("augmented_headings:h4")) { // Augmented headings
+                    if (h4Tag != undefined && x.string.match(h4Tag)) {
+                        var newString = x.string.replace("#" + h4Tag + "", "");
+                        newString = newString.replaceAll("^^", "");
+                        headings.push({ text: newString, heading: parseInt(4), uid: x.uid })
+                    } else if (h5Tag != undefined && x.string.match(h5Tag)) {
+                        var newString = x.string.replace("#" + h5Tag + "", "");
+                        newString = newString.replaceAll("^^", "");
+                        headings.push({ text: newString, heading: parseInt(5), uid: x.uid })
+                    } else if (h6Tag != undefined && x.string.match(h6Tag)) {
+                        var newString = x.string.replace("#" + h6Tag + "", "");
+                        newString = newString.replaceAll("^^", "");
+                        headings.push({ text: newString, heading: parseInt(6), uid: x.uid })
+                    }                    
                 }
                 if (x.hasOwnProperty("children")) {
                     sortObjectsByOrder(x.children);
