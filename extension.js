@@ -6,7 +6,7 @@ var h4Tag, h5Tag, h6Tag;
 
 export default {
     onload: ({ extensionAPI }) => {
-        window.roamAlphaAPI.ui.commandPalette.addCommand({
+        extensionAPI.ui.commandPalette.addCommand({
             label: "Create a Table of Contents (toc)",
             callback: () => createTOC()
         });
@@ -85,9 +85,6 @@ export default {
         }
     },
     onunload: () => {
-        window.roamAlphaAPI.ui.commandPalette.removeCommand({
-            label: 'Create a Table of Contents (toc)'
-        });
         if (document.getElementById("toc")) {
             document.getElementById("toc").remove();
         }
