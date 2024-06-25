@@ -126,12 +126,31 @@ async function createTOC() {
         const app = document.querySelector(".roam-body .roam-app");
         const compApp = window.getComputedStyle(app);
         let tocTopMargin = 125 - parseInt(compApp["height"]);
+        console.info(compApp["backgroundColor"]);
         if (compApp["backgroundColor"] == "rgba(0, 0, 0, 0)") {
             appBG = "white";
             cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
         } else {
+            var R, G, B, A;
+            var colours = compApp["backgroundColor"].split("(")[1];
+            colours = colours.split(",");
+            R = colours[0].trim();
+            G = colours[1].trim();
+            B = colours[2].trim();
+            B = B.split(")")[0];
+            if (colours.length == 3) {
+                A = 0;
+            } else {
+                A = colours[4];
+            }
+
+            const brightness = R * 0.299 + G * 0.587 + B * 0.114 + ((1 - A) * 255);
             appBG = RGBAToHexA(compApp["backgroundColor"], true);
-            cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
+            if (brightness > 186) {
+                cssString += ".toc-container {background-color: " + appBG + " !important; filter: brightness(85%); top: " + tocTopMargin + "px !important;} ";
+            } else {
+                cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
+            }
         }
         if (document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input")) {
             const h1 = document.querySelector(".rm-heading-level-1>.rm-block__self .rm-block__input");
@@ -222,23 +241,26 @@ async function createTOC() {
                 divParent.id = 'toc';
 
                 for (var i = 0; i < headings.length; i++) { // iterate through headings and create divs in toc
-                    var newDiv = document.createElement('div');
-                    let tocLevel = "toc-" + headings[i].heading.toString();
-                    newDiv.classList.add(tocLevel);
-
-                    let headingText = headings[i].text.replaceAll("**", ""); // strip markdown from headings
-                    headingText = headingText.replaceAll("__", "");
-                    headingText = headingText.replaceAll("::", "");
-                    const regex = /^#(h\d)\^\^(.+)\^\^$/; // check for H4-H6 heading code
-                    if (regex.test(headingText)) {
-                        const array = [...headingText.match(regex)];
-                        headingText = array[2];
+                    console.info(headings[i]);
+                    if (!headings[i].text.startsWith("${{calc")) {
+                        var newDiv = document.createElement('div');
+                        let tocLevel = "toc-" + headings[i].heading.toString();
+                        newDiv.classList.add(tocLevel);
+    
+                        let headingText = headings[i].text.replaceAll("**", ""); // strip markdown from headings
+                        headingText = headingText.replaceAll("__", "");
+                        headingText = headingText.replaceAll("::", "");
+                        const regex = /^#(h\d)\^\^(.+)\^\^$/; // check for H4-H6 heading code
+                        if (regex.test(headingText)) {
+                            const array = [...headingText.match(regex)];
+                            headingText = array[2];
+                        }
+                        newDiv.innerHTML = headingText;
+                        newDiv.id = "toc" + i;
+                        let uid = headings[i].uid;
+                        newDiv.onclick = (e) => scrollTo(e, uid);
+                        divParent.append(newDiv);
                     }
-                    newDiv.innerHTML = headingText;
-                    newDiv.id = "toc" + i;
-                    let uid = headings[i].uid;
-                    newDiv.onclick = (e) => scrollTo(e, uid);
-                    divParent.append(newDiv);
                 }
 
                 let mainRoam = document.querySelector("div.roam-body-main"); // insert div in DOM
@@ -298,7 +320,7 @@ async function createTOC() {
                         var newString = x.string.replace("#" + h6Tag + "", "");
                         newString = newString.replaceAll("^^", "");
                         headings.push({ text: newString, heading: parseInt(6), uid: x.uid })
-                    }                    
+                    }
                 }
                 if (x.hasOwnProperty("children")) {
                     sortObjectsByOrder(x.children);
