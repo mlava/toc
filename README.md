@@ -1,6 +1,7 @@
 If you do a lot of long-form writing (or reading) in Roam Research, you've probably always wanted this extension: Table of Contents.
 
 **NEW:**
+- updated to resolve [[Page Titles]] and ((blockrefs)) to text for the TOC
 - compatible with Roam Research Hotkeys
 - Updated to work together with Augmented Headings extension to allow H4-H6 level headings
 
