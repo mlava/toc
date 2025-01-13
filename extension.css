@@ -19,6 +19,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor:pointer;
 }
 
 .toc-2 {
@@ -27,6 +28,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor:pointer;
 }
 
 .toc-3 {
@@ -35,6 +37,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor:pointer;
 }
 
 .toc-4 {
@@ -43,6 +46,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor:pointer;
 }
 
 .toc-5 {
@@ -51,6 +55,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor:pointer;
 }
 
 .toc-6 {
@@ -59,4 +64,5 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor:pointer;
 }
