@@ -126,7 +126,6 @@ async function createTOC() {
         const app = document.querySelector(".roam-body .roam-app");
         const compApp = window.getComputedStyle(app);
         let tocTopMargin = 125 - parseInt(compApp["height"]);
-        console.info(compApp["backgroundColor"]);
         if (compApp["backgroundColor"] == "rgba(0, 0, 0, 0)") {
             appBG = "white";
             cssString += ".toc-container {background-color: " + appBG + " !important; top: " + tocTopMargin + "px !important;} ";
@@ -241,18 +240,32 @@ async function createTOC() {
                 divParent.id = 'toc';
 
                 for (var i = 0; i < headings.length; i++) { // iterate through headings and create divs in toc
-                    console.info(headings[i]);
                     if (!headings[i].text.startsWith("${{calc")) {
                         var newDiv = document.createElement('div');
                         let tocLevel = "toc-" + headings[i].heading.toString();
                         newDiv.classList.add(tocLevel);
-    
+
                         let headingText = headings[i].text.replaceAll("**", ""); // strip markdown from headings
                         headingText = headingText.replaceAll("__", "");
                         headingText = headingText.replaceAll("::", "");
-                        const regex = /^#(h\d)\^\^(.+)\^\^$/; // check for H4-H6 heading code
-                        if (regex.test(headingText)) {
-                            const array = [...headingText.match(regex)];
+                        headingText = headingText.replaceAll("[[", "");
+                        headingText = headingText.replaceAll("]]", "");
+                        const regex = /\(\((.{9,10})\)\)/gm;
+                        if (regex.test(headingText)) { // check for blockref matches
+                            let res = headingText.match(regex);
+                            for (var j = 0; j < res.length; j++) {
+                                var thisPageRef = res[j];
+                                var thisPageRef1 = thisPageRef.replace("((", "");
+                                thisPageRef1 = thisPageRef1.replace("))", "");
+                                var text = await window.roamAlphaAPI.pull("[:block/string]", [":block/uid", thisPageRef1])?.[":block/string"];
+                                if (text != undefined && text != null) {
+                                    headingText = headingText.replace(thisPageRef, text);
+                                }
+                            }
+                        }
+                        const regex1 = /^#(h\d)\^\^(.+)\^\^$/; // check for H4-H6 heading code
+                        if (regex1.test(headingText)) {
+                            const array = [...headingText.match(regex1)];
                             headingText = array[2];
                         }
                         newDiv.innerHTML = headingText;
