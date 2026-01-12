@@ -1,0 +1,26 @@
+{
+  "name": "toc",
+  "version": "1.0.0",
+  "description": "Table of Contents for Roam Research",
+  "homepage": "https://github.com/mlava/toc#readme",
+  "bugs": {
+    "url": "https://github.com/mlava/toc/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mlava/toc.git"
+  },
+  "license": "ISC",
+  "author": "Mark Lavercombe",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack"
+  },
+  "dependencies": {
+    "izitoast": "^1.4.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1"
+  }
+}

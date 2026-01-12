@@ -1,25 +1,143 @@
-If you do a lot of long-form writing (or reading) in Roam Research, you've probably always wanted this extension: Table of Contents.
+# Table of Contents for Roam Research
 
-**NEW:**
-- updated to resolve [[Page Titles]] and ((blockrefs)) to text for the TOC
-- compatible with Roam Research Hotkeys
-- Updated to work together with Augmented Headings extension to allow H4-H6 level headings
+If you do a lot of long-form writing or reading in **Roam Research**, navigating large pages can quickly become frustrating. **Table of Contents (TOC)** adds a fast, floating, and intelligent outline of your page headings — always visible, always in sync.
 
-You can trigger this extension by opening the Command Palette and choosing 'Create a Table of Contents (toc)'. You could also click the icon in the Roam topbar at top left as shown below. The extension will scan your page for all of your headings and create a floating, sticky Table of Contents to the right of your page.
+---
 
-![image](https://user-images.githubusercontent.com/6857790/209426667-006486e4-a818-4e24-8994-424d41226f85.png)
+## ✨ What this extension does
 
-Clicking on any of the headings in the TOC will scroll your page to that heading. Alternatively, if you hold shift while clicking on the TOC heading it will open that heading block in your right sidebar.
+- Scans the current page for headings (H1–H6)
+- Builds a **floating, sticky Table of Contents** alongside your page
+- Keeps the TOC **live-updated** as you edit (optional)
+- Lets you **jump instantly** to any section
+- Works well with common Roam workflows (Daily Notes, sidebar, themes, keyboard navigation)
 
-![toc](https://user-images.githubusercontent.com/6857790/204086802-28cd5b53-f64e-40b9-a3c0-17c8e93a4b44.gif)
+You can open the TOC via:
+- **Command Palette** → *Create a Table of Contents (toc)*
+- **Topbar button** (toggle on/off)
 
-As you can see in the gif, if you add or remove any headings, the TOC will be automatically updated. The same applies if you change from H1 to H2 and so on. If you navigate to a new page in your graph, the TOC will be removed. (You will need to re-create the TOC if you return to your page and still need it.)
+---
 
-If you open the right sidebar, the TOC will move left so that it doesn't obstruct the sidebar content.
+## 🧭 Using the TOC
 
-TODO:
-1. explore whether creating a TOC for a page can be persisted so that you don't need to re-create it if you go back to that page.
-2. ~~configure TOC css to respect the css of any themes applied to your graph, including Roam Studio (just refresh the TOC by using the Command Palette)~~
-3. ~~implement shift-click to open heading block in right sidebar rather than scrolling to content~~
-4. ~~make the topbar button a toggle to show or hide the TOC~~
-5. ~~automatically open any closed headings before attempting to scroll, to make sure there aren't errors~~
+### Basic navigation
+- **Click a heading** → scrolls the page to that heading
+- **Shift-click a heading** → opens that block in the **right sidebar**
+
+### Active heading highlight
+As you scroll the page, the TOC highlights the **currently visible heading**, helping you keep your place in long documents.
+
+---
+
+## 🔄 Live updates while editing (Auto-refresh)
+
+When *Auto-refresh* is enabled (default):
+
+- Adding, removing, or changing headings updates the TOC automatically
+- Switching heading levels (H1 → H2, etc.) is reflected instantly
+- No manual refresh required
+
+This uses Roam’s pull-watch API and debounced rebuilds for performance.
+
+---
+
+## 🧠 Smart filtering & performance safeguards
+
+### Filter box
+If enabled, a filter input appears at the top of the TOC:
+- Type to quickly narrow down headings
+- Helpful for very long pages
+
+### Ignored subtrees (automatic)
+The TOC automatically ignores certain widget-style blocks (and their subtrees), including:
+- Better Tasks dashboards (**Today**, **Overdue**, **Upcoming**, **Inbox**)
+- Embedded blocks that resolve to those widgets
+
+This prevents noisy or irrelevant sections from polluting your TOC.
+
+---
+
+## 📌 Persistence (per page)
+
+### Remember TOC open / closed state
+When enabled:
+- The TOC remembers whether it was open or closed **per page**
+- Stored in the page’s block properties
+- Restored automatically when you return to that page
+
+### Remember scroll position (optional)
+When enabled:
+- The TOC remembers the **last visible heading** you were reading
+- On reopening the page, the TOC can restore the active heading and scroll you back to that section
+
+There are safety guards to avoid fighting with:
+- Manual scrolling
+- Clicking TOC items
+- Page navigation and layout changes
+
+---
+
+## 🧩 Compatibility
+
+### Augmented Headings
+- Compatible with the **Augmented Headings** extension
+- Supports H4–H6 levels via tagged headings
+- Attempts to style those levels to match your current theme
+
+### Themes & CSS
+- TOC heading styles (font size, weight, color) are derived from your current theme where possible
+- Works well with Roam Studio and other custom themes
+- If you switch themes mid-session, rebuild the TOC
+
+### Keyboard navigation
+- The topbar button supports keyboard activation (Enter/Space)
+- TOC filter input (if enabled) is keyboard-friendly
+
+---
+
+## ⚙️ Settings
+
+All settings are available under **Roam Depot → Extension Settings → TOC**.
+
+### General
+- **Enable filter box** – Show/hide the TOC search input
+- **Auto-refresh TOC while editing** – Live updates when headings change
+- **Resolve ((block refs)) in headings** – Converts block refs to text (slower on very large pages)
+- **Exclude headings** – Comma-separated list of heading text to exclude (case-insensitive “contains” match)
+- **Respect page filters** – Applies the page’s includes/removes rules when building the TOC  
+  - *Remove* behaves like Roam: it hides the matching block **and its descendants**, even if the removed block isn’t a heading.
+  - Page filters are checked periodically while the TOC is open.
+
+### Appearance
+- **TOC max width** – Any CSS width (e.g. `250px`, `20rem`)
+- **TOC max height** – Any CSS height (e.g. `calc(100vh - 90px)`)
+
+Both settings are clamped to safe limits to avoid layout issues.
+
+### Persistence
+- **Remember TOC open/closed per page** – Stores TOC state in page properties
+- **Remember scroll position per page** – Stores the last visible heading and restores it
+
+---
+
+## 🔒 Safety & performance notes
+
+- Observers, timers, and listeners are cleaned up on unload
+- Page-property writes are queued to avoid clobbering concurrent updates
+- Embedded block inspection is cached with a soft cap to prevent memory growth
+- Scroll persistence is gated to avoid fighting user input
+
+---
+
+## 🧪 Known limitations
+
+- Very large pages with thousands of blocks may rebuild more slowly, especially if block-ref resolution is enabled
+- Scroll restoration may not work if the target heading is inside a deeply collapsed region
+
+---
+
+## 🚀 Roadmap (ideas)
+
+- Optional per-graph ignored subtree configuration
+- Keyboard navigation within the TOC
+- Collapsible TOC sections for deeply nested documents
