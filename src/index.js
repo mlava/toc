@@ -128,9 +128,13 @@ export default {
         initiateFilterPoll();
         scheduleMenuDivBuild(); // initial
         scheduleAutoOpenFromProps();
+
+        registerExtensionTools();
     },
 
     onunload: async () => {
+        delete window.RoamExtensionTools?.["toc"];
+
         cleanupTOC();
         cleanupMenu();
         cleanupUserScrollTracking();
@@ -144,6 +148,39 @@ export default {
         }
     },
 };
+
+// ----------------------------------------------
+// Extension Tools API (Chief of Staff integration)
+// ----------------------------------------------
+
+function registerExtensionTools() {
+    window.RoamExtensionTools = window.RoamExtensionTools || {};
+    window.RoamExtensionTools["toc"] = {
+        name: "Table of Contents",
+        version: "1.0",
+        tools: [
+            {
+                name: "toc_get_status",
+                description: "Check whether the Table of Contents panel is currently visible on the active page.",
+                readOnly: true,
+                parameters: { type: "object", properties: {} },
+                execute: async () => {
+                    return { visible: tocShowing };
+                },
+            },
+            {
+                name: "toc_toggle",
+                description: "Toggle the Table of Contents panel on the current page. If it is open, close it. If it is closed, open it. Returns the new visibility state.",
+                readOnly: true,
+                parameters: { type: "object", properties: {} },
+                execute: async () => {
+                    await toggleTOC();
+                    return { visible: tocShowing };
+                },
+            },
+        ],
+    };
+}
 
 // ----------------------------------------------
 // Settings init + handlers
